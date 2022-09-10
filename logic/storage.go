@@ -28,8 +28,7 @@ func NewDefaultStorage(addr, password string, db int) *defaultStorage {
 	})
 	sf := sonyflake.NewSonyflake(
 		sonyflake.Settings{
-			StartTime: time.Time{},
-			//StartTime:      time.Now().AddDate(1, 1, 1),
+			StartTime:      time.Time{},
 			MachineID:      nil,
 			CheckMachineID: nil,
 		})

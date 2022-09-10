@@ -9,8 +9,8 @@ import (
 
 func QueryAPI(storage Storage) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		rid := c.Query("tid")
-		value, err := storage.Get(c.Request.Context(), rid)
+		tid := c.Query("tid")
+		value, err := storage.Get(c.Request.Context(), tid)
 		if err != nil {
 			log.Println(err.Error())
 			c.String(http.StatusNotFound, "not found")
