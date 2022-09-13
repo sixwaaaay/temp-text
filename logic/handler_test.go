@@ -20,7 +20,7 @@ type MockStorage struct {
 	key        uint64
 }
 
-func (m *MockStorage) Put(ctx context.Context, value string, duration time.Duration) (key string, err error) {
+func (m *MockStorage) Put(_ context.Context, value string, _ time.Duration) (key string, err error) {
 	if m.raiseError {
 		return "", errors.New("error")
 	}
@@ -30,7 +30,7 @@ func (m *MockStorage) Put(ctx context.Context, value string, duration time.Durat
 	return id, nil
 }
 
-func (m *MockStorage) Get(ctx context.Context, key string) (value string, err error) {
+func (m *MockStorage) Get(_ context.Context, key string) (value string, err error) {
 	if m.raiseError {
 		return "", errors.New("error")
 	}
