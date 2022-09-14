@@ -19,7 +19,7 @@
 
 ## 运行
 
-config.example 为配置文件示例，修改配置并将文件类型重命名为yaml即可运行
+config.example 为配置文件示例，修改配置并将文件类型重命名为 yaml 即可运行
 
 依赖：
 
