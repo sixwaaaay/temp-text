@@ -1,0 +1,4 @@
+ApiAddr: host:port
+redis:
+  addr: host:port
+  password: "password"
