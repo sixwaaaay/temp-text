@@ -16,15 +16,14 @@ type Storage interface {
 }
 
 type defaultStorage struct {
-	cli *redis.Client        // redis cli
-	sf  *sonyflake.Sonyflake // unique id generator
+	redisCli *redis.ClusterClient // redis cli
+	sf       *sonyflake.Sonyflake // unique id generator
 }
 
-func NewDefaultStorage(addr, password string, db int) *defaultStorage {
-	cli := redis.NewClient(&redis.Options{
-		Addr:     addr,
+func NewDefaultStorage(addr []string, password string) *defaultStorage {
+	cli := redis.NewClusterClient(&redis.ClusterOptions{
+		Addrs:    addr,
 		Password: password,
-		DB:       db,
 	})
 	sf := sonyflake.NewSonyflake(
 		sonyflake.Settings{
@@ -46,7 +45,7 @@ func (d *defaultStorage) Put(ctx context.Context, value string, duration time.Du
 		return key, errors.New("server error")
 	}
 	key = strconv.FormatUint(id, 10)
-	err = d.cli.Set(ctx, key, value, duration).Err()
+	err = d.redisCli.Set(ctx, key, value, duration).Err()
 	if err != nil {
 		log.Printf("error to set key, %v", err.Error())
 		return "", errors.New("server error")
@@ -56,6 +55,6 @@ func (d *defaultStorage) Put(ctx context.Context, value string, duration time.Du
 
 // Get 获取相关值
 func (d *defaultStorage) Get(ctx context.Context, key string) (value string, err error) {
-	value, err = d.cli.Get(ctx, key).Result()
+	value, err = d.redisCli.Get(ctx, key).Result()
 	return
 }

@@ -11,7 +11,7 @@ import (
 
 func TestPut(t *testing.T) {
 	s := miniredis.RunT(t)
-	storage := NewDefaultStorage(s.Addr(), "", 0)
+	storage := NewDefaultStorage([]string{s.Addr()}, "")
 	ctx := context.Background()
 	key, err := storage.Put(ctx, "test", time.Second)
 	assert.NoError(t, err)
@@ -21,7 +21,7 @@ func TestPut(t *testing.T) {
 
 func TestGetInTime(t *testing.T) {
 	s := miniredis.RunT(t)
-	storage := NewDefaultStorage(s.Addr(), "", 0)
+	storage := NewDefaultStorage([]string{s.Addr()}, "")
 	ctx := context.Background()
 	v := "test"
 	key, err := storage.Put(ctx, v, time.Second)
@@ -34,7 +34,7 @@ func TestGetInTime(t *testing.T) {
 
 func TestGetNotInTime(t *testing.T) {
 	s := miniredis.RunT(t)
-	storage := NewDefaultStorage(s.Addr(), "", 0)
+	storage := NewDefaultStorage([]string{s.Addr()}, "")
 	ctx := context.Background()
 	v := "test"
 	key, err := storage.Put(ctx, v, time.Second)

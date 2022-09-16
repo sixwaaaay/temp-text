@@ -14,9 +14,8 @@ import (
 
 type Conf struct {
 	Redis struct {
-		Addr     string `json:"addr"`
-		Password string `json:"password"`
-		DB       int    `json:"db"`
+		Addr     []string `json:"addr"`
+		Password string   `json:"password"`
 	}
 	ApiAddr string `json:"ApiAddr"`
 }
@@ -37,7 +36,7 @@ func main() {
 	gin.SetMode(gin.ReleaseMode)
 	r := gin.Default()
 
-	storage := logic.NewDefaultStorage(conf.Redis.Addr, conf.Redis.Password, conf.Redis.DB)
+	storage := logic.NewDefaultStorage(conf.Redis.Addr, conf.Redis.Password)
 	r.GET("/query", logic.QueryAPI(storage))
 	r.POST("/share", logic.ShareAPI(storage))
 
