@@ -1,4 +1,5 @@
 ApiAddr: host:port
 redis:
-  addr: host:port
+  addr:
+    - host:port
   password: "password"
