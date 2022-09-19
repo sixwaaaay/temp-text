@@ -10,6 +10,10 @@ import (
 func QueryAPI(storage Storage) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		tid := c.Query("tid")
+		if len(tid) == 0 {
+			c.String(http.StatusBadRequest, "require parameter tid")
+			return
+		}
 		value, err := storage.Get(c.Request.Context(), tid)
 		if err != nil {
 			log.Println(err.Error())
@@ -23,6 +27,10 @@ func QueryAPI(storage Storage) gin.HandlerFunc {
 func ShareAPI(storage Storage) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		content := c.PostForm("content")
+		if len(content) == 0 {
+			c.String(http.StatusBadRequest, "require parameter content")
+			return
+		}
 		log.Println(content)
 		key, err := storage.Put(c.Request.Context(), content, time.Minute)
 		if err != nil {
