@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
+	"github.com/zsais/go-gin-prometheus"
 	"log"
 	"net/http"
 	"os"
@@ -36,6 +37,10 @@ func main() {
 
 	gin.SetMode(gin.ReleaseMode)
 	r := gin.Default()
+
+	p := ginprometheus.NewPrometheus("gin")
+	p.Use(r)
+
 	r.GET("/ping", func(c *gin.Context) {
 		c.String(http.StatusOK, "pong")
 	})
