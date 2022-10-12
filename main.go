@@ -36,7 +36,9 @@ func main() {
 
 	gin.SetMode(gin.ReleaseMode)
 	r := gin.Default()
-
+	r.GET("/ping", func(c *gin.Context) {
+		c.String(http.StatusOK, "pong")
+	})
 	storage := logic.NewDefaultStorage(conf.Redis.Addr, conf.Redis.Password)
 	r.GET("/query", logic.QueryAPI(storage))
 	r.POST("/share", logic.ShareAPI(storage))
