@@ -1,4 +1,4 @@
-module tempMsg
+module github.com/sixwaaaay/temp-text
 
 go 1.19
 

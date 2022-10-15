@@ -2,16 +2,17 @@ package main
 
 import (
 	"context"
-	"github.com/gin-gonic/gin"
-	"github.com/spf13/viper"
-	"github.com/zsais/go-gin-prometheus"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
-	"tempMsg/grace"
-	"tempMsg/logic"
 	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/sixwaaaay/temp-text/grace"
+	"github.com/sixwaaaay/temp-text/logic"
+	"github.com/spf13/viper"
+	ginprometheus "github.com/zsais/go-gin-prometheus"
 )
 
 type Conf struct {
