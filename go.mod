@@ -8,7 +8,7 @@ require (
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/sony/sonyflake v1.1.0
 	github.com/spf13/viper v1.13.0
-	github.com/stretchr/testify v1.8.0
+	github.com/stretchr/testify v1.8.1
 	github.com/zsais/go-gin-prometheus v0.1.0
 )
 
