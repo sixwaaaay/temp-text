@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/zap"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -52,7 +53,7 @@ func TestShareAPIOk(t *testing.T) {
 		raiseError: false,
 		key:        0,
 	}
-	r.POST("/share", ShareAPI(storage))
+	r.POST("/share", ShareAPI(zap.L(), storage))
 	r.ServeHTTP(w, c.Request)
 	assert.Equal(t, http.StatusOK, w.Code)
 	assert.Equal(t, "0", w.Body.String())
@@ -69,7 +70,7 @@ func TestShareAPIParamError(t *testing.T) {
 		raiseError: false,
 		key:        0,
 	}
-	r.POST("/share", ShareAPI(storage))
+	r.POST("/share", ShareAPI(zap.L(), storage))
 	r.ServeHTTP(w, c.Request)
 	assert.Equal(t, http.StatusBadRequest, w.Code)
 	assert.Equal(t, "require parameter content", w.Body.String())
@@ -85,7 +86,7 @@ func TestShareAPIFail(t *testing.T) {
 		raiseError: false,
 		key:        0,
 	}
-	r.POST("/share", ShareAPI(storage))
+	r.POST("/share", ShareAPI(zap.L(), storage))
 	storage.raiseError = true
 	r.ServeHTTP(w, c.Request)
 	assert.Equal(t, http.StatusInternalServerError, w.Code)
@@ -102,7 +103,7 @@ func TestQueryAPIOk(t *testing.T) {
 	key, _ := storage.Put(context.Background(), testVal, time.Second)
 	w, c, r := httpTestHelper()
 	c.Request, _ = http.NewRequest("GET", fmt.Sprintf("/query?tid=%s", key), nil)
-	r.GET("/query", QueryAPI(storage))
+	r.GET("/query", QueryAPI(zap.L(), storage))
 	r.ServeHTTP(w, c.Request)
 	assert.Equal(t, http.StatusOK, w.Code)
 	assert.Equal(t, testVal, w.Body.String())
@@ -118,7 +119,7 @@ func TestQueryAPIFail(t *testing.T) {
 	key, _ := storage.Put(context.Background(), testVal, time.Second)
 	w, c, r := httpTestHelper()
 	c.Request, _ = http.NewRequest("GET", fmt.Sprintf("/query?tid=%s", key), nil)
-	r.GET("/query", QueryAPI(storage))
+	r.GET("/query", QueryAPI(zap.L(), storage))
 	storage.raiseError = true
 	r.ServeHTTP(w, c.Request)
 	assert.Equal(t, http.StatusNotFound, w.Code)
@@ -136,7 +137,7 @@ func TestQueryAPIParamError(t *testing.T) {
 	w, c, r := httpTestHelper()
 	// following request do not contain the 'tid' param
 	c.Request, _ = http.NewRequest("GET", fmt.Sprintf("/query?x=%s", key), nil)
-	r.GET("/query", QueryAPI(storage))
+	r.GET("/query", QueryAPI(zap.L(), storage))
 	r.ServeHTTP(w, c.Request)
 	assert.Equal(t, http.StatusBadRequest, w.Code)
 	assert.Equal(t, "require parameter tid", w.Body.String())

@@ -5,7 +5,7 @@ import (
 	"errors"
 	"github.com/go-redis/redis/v8"
 	"github.com/sony/sonyflake"
-	"log"
+	"go.uber.org/zap"
 	"strconv"
 	"time"
 )
@@ -18,9 +18,10 @@ type Storage interface {
 type defaultStorage struct {
 	redisCli *redis.ClusterClient // redis cli
 	sf       *sonyflake.Sonyflake // unique id generator
+	logger   *zap.Logger
 }
 
-func NewDefaultStorage(addr []string, password string) *defaultStorage {
+func NewDefaultStorage(addr []string, password string, logger *zap.Logger) Storage {
 	cli := redis.NewClusterClient(&redis.ClusterOptions{
 		Addrs:    addr,
 		Password: password,
@@ -34,6 +35,7 @@ func NewDefaultStorage(addr []string, password string) *defaultStorage {
 	return &defaultStorage{
 		cli,
 		sf,
+		logger,
 	}
 }
 
@@ -41,13 +43,13 @@ func NewDefaultStorage(addr []string, password string) *defaultStorage {
 func (d *defaultStorage) Put(ctx context.Context, value string, duration time.Duration) (key string, err error) {
 	id, err := d.sf.NextID()
 	if err != nil {
-		log.Printf("error to generate id: %v", err.Error())
+		d.logger.Error("error to generate id", zap.Error(err))
 		return key, errors.New("server error")
 	}
 	key = strconv.FormatUint(id, 10)
 	err = d.redisCli.Set(ctx, key, value, duration).Err()
 	if err != nil {
-		log.Printf("error to set key, %v", err.Error())
+		d.logger.Error("error to set key", zap.Error(err))
 		return "", errors.New("server error")
 	}
 	return
