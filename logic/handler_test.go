@@ -56,7 +56,7 @@ func TestShareAPIOk(t *testing.T) {
 	r.POST("/share", ShareAPI(zap.L(), storage))
 	r.ServeHTTP(w, c.Request)
 	assert.Equal(t, http.StatusOK, w.Code)
-	assert.Equal(t, "0", w.Body.String())
+	assert.JSONEq(t, `{"code":0, "data":"0", "msg":"success"}`, w.Body.String())
 }
 func TestShareAPIParamError(t *testing.T) {
 	w, c, r := httpTestHelper()
@@ -73,7 +73,7 @@ func TestShareAPIParamError(t *testing.T) {
 	r.POST("/share", ShareAPI(zap.L(), storage))
 	r.ServeHTTP(w, c.Request)
 	assert.Equal(t, http.StatusBadRequest, w.Code)
-	assert.Equal(t, "require parameter content", w.Body.String())
+	assert.JSONEq(t, `{"code":400, "msg":"require parameter content"}`, w.Body.String())
 }
 func TestShareAPIFail(t *testing.T) {
 	w, c, r := httpTestHelper()
@@ -90,7 +90,7 @@ func TestShareAPIFail(t *testing.T) {
 	storage.raiseError = true
 	r.ServeHTTP(w, c.Request)
 	assert.Equal(t, http.StatusInternalServerError, w.Code)
-	assert.Equal(t, "fail", w.Body.String())
+	assert.JSONEq(t, `{"code":500, "msg":"fail"}`, w.Body.String())
 }
 
 func TestQueryAPIOk(t *testing.T) {
@@ -106,7 +106,7 @@ func TestQueryAPIOk(t *testing.T) {
 	r.GET("/query", QueryAPI(zap.L(), storage))
 	r.ServeHTTP(w, c.Request)
 	assert.Equal(t, http.StatusOK, w.Code)
-	assert.Equal(t, testVal, w.Body.String())
+	assert.JSONEq(t, fmt.Sprintf(`{"code":0, "data":"%s", "msg":"success"}`, testVal), w.Body.String())
 }
 
 func TestQueryAPIFail(t *testing.T) {
@@ -123,7 +123,7 @@ func TestQueryAPIFail(t *testing.T) {
 	storage.raiseError = true
 	r.ServeHTTP(w, c.Request)
 	assert.Equal(t, http.StatusNotFound, w.Code)
-	assert.Equal(t, "not found", w.Body.String())
+	assert.JSONEq(t, `{"code":404, "msg":"not found"}`, w.Body.String())
 }
 
 func TestQueryAPIParamError(t *testing.T) {
@@ -140,7 +140,7 @@ func TestQueryAPIParamError(t *testing.T) {
 	r.GET("/query", QueryAPI(zap.L(), storage))
 	r.ServeHTTP(w, c.Request)
 	assert.Equal(t, http.StatusBadRequest, w.Code)
-	assert.Equal(t, "require parameter tid", w.Body.String())
+	assert.JSONEq(t, `{"code":400, "msg":"require parameter tid"}`, w.Body.String())
 }
 
 // httpTestHelper 返回用于测试的三个http相关对象
