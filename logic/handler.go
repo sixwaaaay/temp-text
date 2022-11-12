@@ -11,16 +11,26 @@ func QueryAPI(logger *zap.Logger, storage Storage) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		tid := c.Query("tid")
 		if len(tid) == 0 {
-			c.String(http.StatusBadRequest, "require parameter tid")
+			c.JSON(http.StatusBadRequest, Resp[*string]{
+				Code: http.StatusBadRequest,
+				Msg:  "require parameter tid",
+			})
 			return
 		}
 		value, err := storage.Get(c.Request.Context(), tid)
 		if err != nil {
 			logger.Error("get failed", zap.Error(err))
-			c.String(http.StatusNotFound, "not found")
+			c.JSON(http.StatusNotFound, Resp[*string]{
+				Code: http.StatusNotFound,
+				Msg:  "not found",
+			})
 			return
 		}
-		c.String(http.StatusOK, value)
+		c.JSON(http.StatusOK, Resp[string]{
+			Code: 0,
+			Msg:  "success",
+			Data: value,
+		})
 	}
 }
 
@@ -28,14 +38,25 @@ func ShareAPI(logger *zap.Logger, storage Storage) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		content := c.PostForm("content")
 		if len(content) == 0 {
-			c.String(http.StatusBadRequest, "require parameter content")
+			c.JSON(http.StatusBadRequest, Resp[*string]{
+				Code: http.StatusBadRequest,
+				Msg:  "require parameter content",
+			})
 			return
 		}
 		key, err := storage.Put(c.Request.Context(), content, time.Minute)
 		if err != nil {
 			logger.Error("put failed", zap.Error(err))
-			c.String(http.StatusInternalServerError, "fail")
+			c.JSON(http.StatusInternalServerError, Resp[*string]{
+				Code: http.StatusInternalServerError,
+				Msg:  "fail",
+			})
+			return
 		}
-		c.String(http.StatusOK, key)
+		c.JSON(http.StatusOK, Resp[string]{
+			Code: 0,
+			Msg:  "success",
+			Data: key,
+		})
 	}
 }
