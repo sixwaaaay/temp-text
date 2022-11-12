@@ -36,7 +36,9 @@ func main() {
 			NewRouter,
 			NewServer,
 		),
-		fx.Invoke(NewServer),
+		fx.Invoke(func(server *http.Server) {
+			// do something if needed
+		}),
 	).Run()
 }
 
