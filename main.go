@@ -3,13 +3,17 @@ package main
 import (
 	"context"
 	ginzap "github.com/gin-contrib/zap"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sixwaaaay/temp-text/logic"
-	ginprom "github.com/zsais/go-gin-prometheus"
 	"go.uber.org/fx"
 	"go.uber.org/fx/fxevent"
 	"go.uber.org/zap"
 	"net/http"
 	"time"
+
+	metrics "github.com/slok/go-http-metrics/metrics/prometheus"
+	"github.com/slok/go-http-metrics/middleware"
+	ginmiddleware "github.com/slok/go-http-metrics/middleware/gin"
 
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
@@ -44,6 +48,7 @@ func main() {
 
 func NewServer(lc fx.Lifecycle, logger *zap.Logger, router *gin.Engine, conf *Conf) *http.Server {
 	server := &http.Server{Addr: conf.ApiAddr, Handler: router}
+	// add lifecycle hooks for starting and gracefully stopping the server
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
 			go func() {
@@ -101,10 +106,23 @@ func NewHandlers(logger *zap.Logger, storage logic.Storage) []Handler {
 func NewRouter(logger *zap.Logger, handlers []Handler) *gin.Engine {
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.New()
-	router.Use(ginzap.Ginzap(logger, time.RFC3339, true))
-	router.Use(ginzap.RecoveryWithZap(logger, true))
-	p := ginprom.NewPrometheus("gin")
-	p.Use(router)
+	// replace gin default logger with zap logger
+	{
+		router.Use(ginzap.Ginzap(logger, time.RFC3339, true))
+		router.Use(ginzap.RecoveryWithZap(logger, true))
+	}
+
+	// add prometheus metrics middleware
+	{
+		metricsMiddleware := middleware.New(middleware.Config{
+			Recorder: metrics.NewRecorder(metrics.Config{}),
+		})
+
+		router.GET("/metrics", gin.WrapH(promhttp.Handler()))
+		router.Use(ginmiddleware.Handler("", metricsMiddleware))
+	}
+
+	// mount handlers
 	for _, handler := range handlers {
 		router.Handle(handler.Method, handler.Path, handler.Handler)
 	}
@@ -112,14 +130,17 @@ func NewRouter(logger *zap.Logger, handlers []Handler) *gin.Engine {
 }
 
 func NewConfig(logger *zap.Logger) *Conf {
-	viper.SetConfigType("yaml")
-	viper.AddConfigPath(".")
-	err := viper.ReadInConfig()
-	if err != nil {
-		logger.Panic("read config failed", zap.Error(err))
+	// load config from yaml file
+	{
+		viper.SetConfigType("yaml")
+		viper.AddConfigPath(".")
+		err := viper.ReadInConfig()
+		if err != nil {
+			logger.Panic("read config failed", zap.Error(err))
+		}
 	}
 	conf := Conf{}
-	err = viper.Unmarshal(&conf)
+	err := viper.Unmarshal(&conf)
 	if err != nil {
 		logger.Panic("unmarshal config failed", zap.Error(err))
 	}
