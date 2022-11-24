@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	ginzap "github.com/gin-contrib/zap"
+	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sixwaaaay/temp-text/logic"
 	"go.uber.org/fx"
@@ -20,10 +21,7 @@ import (
 )
 
 type Conf struct {
-	Redis struct {
-		Addr     []string `json:"addr"`
-		Password string   `json:"password"`
-	}
+	Redis   logic.RedisConfig
 	ApiAddr string `json:"ApiAddr"`
 }
 
@@ -67,12 +65,12 @@ func NewServer(lc fx.Lifecycle, logger *zap.Logger, router *gin.Engine, conf *Co
 	return server
 }
 
-func NewLogger() *zap.Logger {
+func NewLogger() (*zap.Logger, error) {
 	logger, err := zap.NewProduction()
 	if err != nil {
-		panic(err)
+		return nil, errors.WithMessage(err, "failed to create logger")
 	}
-	return logger
+	return logger, nil
 }
 
 type Handler struct {
@@ -129,24 +127,23 @@ func NewRouter(logger *zap.Logger, handlers []Handler) *gin.Engine {
 	return router
 }
 
-func NewConfig(logger *zap.Logger) *Conf {
+func NewConfig() (*Conf, error) {
 	// load config from yaml file
 	{
 		viper.SetConfigType("yaml")
 		viper.AddConfigPath(".")
-		err := viper.ReadInConfig()
-		if err != nil {
-			logger.Panic("read config failed", zap.Error(err))
+		if err := viper.ReadInConfig(); err != nil {
+			return nil, errors.WithMessage(err, "failed to read config file")
 		}
 	}
 	conf := Conf{}
 	err := viper.Unmarshal(&conf)
 	if err != nil {
-		logger.Panic("unmarshal config failed", zap.Error(err))
+		return nil, errors.WithMessage(err, "unmarshal config failed")
 	}
-	return &conf
+	return &conf, nil
 }
 
 func NewStorage(conf *Conf, logger *zap.Logger) logic.Storage {
-	return logic.NewDefaultStorage(conf.Redis.Addr, conf.Redis.Password, logger)
+	return logic.NewDefaultStorage(conf.Redis, logger)
 }
