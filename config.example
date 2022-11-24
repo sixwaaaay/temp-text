@@ -1,5 +1,11 @@
+# rename the file to the a yaml file as the config file
 ApiAddr: host:port
 redis:
   addr:
     - host:port
   password: "password"
+#  master_name: ":6379"
+#
+#  1. If the master_name option is specified, sentinel mode will be used.
+#  2. if the number of address is two or more, cluster mode will be used.
+#  3. Otherwise, a single-node mode will be used.

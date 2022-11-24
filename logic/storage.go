@@ -16,22 +16,28 @@ type Storage interface {
 }
 
 type defaultStorage struct {
-	redisCli *redis.ClusterClient // redis cli
-	sf       *sonyflake.Sonyflake // unique id generator
+	redisCli redis.UniversalClient // redis cli
+	sf       *sonyflake.Sonyflake  // unique id generator
 	logger   *zap.Logger
 }
 
-func NewDefaultStorage(addr []string, password string, logger *zap.Logger) Storage {
-	cli := redis.NewClusterClient(&redis.ClusterOptions{
-		Addrs:    addr,
-		Password: password,
+type RedisConfig struct {
+	Addr       []string `json:"addr,omitempty"`
+	Password   string   `json:"password,omitempty"`
+	MasterName string   `json:"master_name,omitempty"`
+}
+
+func NewDefaultStorage(config RedisConfig, logger *zap.Logger) Storage {
+	cli := redis.NewUniversalClient(&redis.UniversalOptions{
+		Addrs:      config.Addr,
+		Password:   config.Password,
+		MasterName: config.MasterName,
 	})
-	sf := sonyflake.NewSonyflake(
-		sonyflake.Settings{
-			StartTime:      time.Time{},
-			MachineID:      nil,
-			CheckMachineID: nil,
-		})
+	sf := sonyflake.NewSonyflake(sonyflake.Settings{
+		StartTime:      time.Time{},
+		MachineID:      nil,
+		CheckMachineID: nil,
+	})
 	return &defaultStorage{
 		cli,
 		sf,
